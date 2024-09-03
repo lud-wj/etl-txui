@@ -1,0 +1,2345 @@
+{
+  "$ref": "#/definitions/config_pipeline",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "transformer__string.contains": {
+      "description": "Returns whether the input string contains the search string.\nIt accepts nil as an input and returns false in that case.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "case_insensitive": {
+              "description": "Whether the search should be case insensitive.",
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "case_insensitive"
+            },
+            "search": {
+              "description": "The string to search for.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "search"
+            }
+          },
+          "required": [
+            "search"
+          ]
+        },
+        "use": {
+          "enum": [
+            "string.contains"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Contains"
+    },
+    "transformer__kombo.current_posting": {
+      "description": "Returns an item from the object data `job_postings` that satisfies the\nfollowing requirements:\n\n* `visibility` is `\"PUBLIC\"`,\n* `status` is `\"ACTIVE\"`\n* `url` is a string.\n\nThe returned item may differ depending on the `post_url` value of the root\nKombo data object.\n\n* If a satisfying job posting has the same `url` as the `post_url`, it is\n  returned.\n* Otherwise, the first satisfying job posting from the list is returned.\n* Finally, this transformer will return `nil` if:\n  * No job posting satisfies the requirements.\n  * The `job_postings` list is empty.\n  * The `job_postings` key is not a list.\n  * The `job_postings` key does not exist.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {},
+          "required": []
+        },
+        "use": {
+          "enum": [
+            "kombo.current_posting"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "CurrentPosting"
+    },
+    "source__digital_recruiters.jobs": {
+      "description": "DigitalRecruiters jobs API client with URL-based token and no pagination.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "api_token_ref": {
+              "description": "The api token secret reference.",
+              "type": "string",
+              "x-etl-label": "api_token_ref"
+            },
+            "endpoint": {
+              "description": "The endpoint to fetch jobs from, uses `https://app.digitalrecruiters.com` if empty.",
+              "type": "string",
+              "x-etl-label": "endpoint"
+            }
+          },
+          "required": [
+            "api_token_ref"
+          ]
+        },
+        "use": {
+          "enum": [
+            "digital_recruiters.jobs"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "DigitalRecruitersJobs"
+    },
+    "transformer__html.attribute": {
+      "description": "Accepts an HTML string as input and returns a list of all values for the\n`attribute` found on nodes selected with the `selector`.\n\nNote that selected nodes that do not have such attribute are ignored.\n\nAttributes with an empty value (as in `<input checked=\"\" />`) or with no value\n(as in `<input checked />`) will be returned as `\"\"`.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "attribute": {
+              "description": "The attribute name to fetch from the targetted nodes.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "attribute"
+            },
+            "selector": {
+              "description": "A CSS selector to target HTML elements the attribute must be retrieved from.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "selector"
+            }
+          },
+          "required": [
+            "attribute",
+            "selector"
+          ]
+        },
+        "use": {
+          "enum": [
+            "html.attribute"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "GetAttribute"
+    },
+    "target__core.noop": {
+      "description": "A target that does nothing. It is useful for testing and debugging purposes.\n\nEvery load or unload operation will be successful, but no code is executed.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "sleep": {
+              "description": "The number of milliseconds to spend to simulate the remote endpoint work time.",
+              "type": "integer",
+              "x-etl-label": "sleep"
+            }
+          },
+          "required": []
+        },
+        "use": {
+          "enum": [
+            "core.noop"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Non-operative"
+    },
+    "transform_step": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/transform_step__step.preset"
+        },
+        {
+          "$ref": "#/definitions/transform_step__step.transform"
+        }
+      ],
+      "properties": {
+        "params": {
+          "type": "object"
+        },
+        "use": {
+          "enum": [
+            "step.preset",
+            "step.transform"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "use",
+        "params"
+      ],
+      "type": "object"
+    },
+    "transformer__write_value": {
+      "description": "Writes the given value at the given key or path.",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "key": {
+              "description": "The key or path to store the input value in.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "key"
+            },
+            "value": {
+              "description": "The value to write.",
+              "oneOf": [
+                {},
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "value"
+            }
+          },
+          "required": [
+            "key",
+            "value"
+          ]
+        },
+        "use": {
+          "enum": [
+            "write_value"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "WriteValue"
+    },
+    "source__lever.jobs": {
+      "description": "This source implements the Lever postings API v0.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "base_url": {
+              "description": "The Lever API endpoint, without the site name.",
+              "type": "string",
+              "x-etl-label": "base_url"
+            },
+            "max_objects_per_page": {
+              "description": "Controls the pagination by setting the `limit` query parameter for each page.",
+              "type": "integer",
+              "x-etl-label": "max_objects_per_page"
+            },
+            "query_string": {
+              "description": "An optional query string to support filtering at the source level.",
+              "type": "string",
+              "x-etl-label": "query_string"
+            },
+            "site": {
+              "description": "The site name to add as a segment in the URL for the jobs.",
+              "type": "string",
+              "x-etl-label": "site"
+            }
+          },
+          "required": [
+            "base_url",
+            "site"
+          ]
+        },
+        "use": {
+          "enum": [
+            "lever.jobs"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "LeverJobs"
+    },
+    "transformer__write_key": {
+      "description": "Stores the input value in the data object at the given key.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "key": {
+              "description": "The key or path to store the input value in.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "key"
+            },
+            "nil_if_blank": {
+              "description": "Write `nil` instead of the input when the input is an empty string or\na string that contains only whitespace characters.\n",
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "nil_if_blank"
+            }
+          },
+          "required": [
+            "key"
+          ]
+        },
+        "use": {
+          "enum": [
+            "write_key"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "WriteInput"
+    },
+    "transformer__string.concat": {
+      "description": "Adds the `prefix` and or `suffix` to the given input, inserting the `glue` in\nbetween.\n\nNull prefixes or suffixes are treated as empty strings and are ignored. For\ninstance, if the `prefix` is null, the glue will not be added before the input\nstring.\n\nBlank prefixes or suffixes are treated as empty strings and are ignored too.\nThat is, prefixes or suffixes that are only whitespace.\n\nThe glue is parsed as an escaped string, so `\\\\n` will be interpreted as a\n`\\n`, while `\\n` still represent itself, both are treated the same way.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "glue": {
+              "description": "The string between the input and the prefix/suffix",
+              "oneOf": [
+                {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "glue"
+            },
+            "prefix": {
+              "description": "A piece of text to prepend before the input string",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "prefix"
+            },
+            "suffix": {
+              "description": "A piece of text to append after the input string",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "suffix"
+            }
+          },
+          "required": []
+        },
+        "use": {
+          "enum": [
+            "string.concat"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Concat"
+    },
+    "source__kombo.jobs": {
+      "description": "This source implements the Kombo API v1.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "integration_id": {
+              "description": "The ID given on the integration details of the Kombo dashboard.",
+              "type": "string",
+              "x-etl-label": "integration_id"
+            },
+            "max_objects_per_page": {
+              "description": "Controls the pagination by setting the `page_size` query parameter for each page.",
+              "type": "integer",
+              "x-etl-label": "max_objects_per_page"
+            },
+            "url": {
+              "description": "The url to override the default one.",
+              "type": "string",
+              "x-etl-label": "url"
+            },
+            "visibilities_filter": {
+              "description": "Define the `visibilities` filter. This should generaly set to `PUBLIC`.",
+              "type": "string",
+              "x-etl-label": "visibilities_filter"
+            }
+          },
+          "required": [
+            "integration_id"
+          ]
+        },
+        "use": {
+          "enum": [
+            "kombo.jobs"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "KomboJobs"
+    },
+    "transformer__if": {
+      "description": "This transformer is a macro transformer that allows conditional branching. It\nwill execute one of the `then` and `else` sequences depending on the input.\n\n**Boolean rules**\n\n* The input does not have to be a boolean. Any value will be converted to a\nboolean depending whether it is _truthy_ or _falsy_.\n* _Falsy_ values follow the rules of the Elixir language, that is, only\n  `false` and `nil` (equivalent of JSON's `null`) are _falsy_.\n* _Truthy_ values are everything else, including `0` (integer zero), `0.0`\n  (float zero), and `\"\"` (empty string).\n\n**Input variable**\n\nTo use a value both in the `if` call and in the `then` or `else`\ntranformations, one would have to:\n\n* Assign the value to a variable,\n* pass the variable to `if`,\n* use the variable value in the `then` (or `else`).\n\nThe `input_var` param allows to skip the first step:\n\n* Pass any value to the `if`, defining the `input_var` param to a name,\n* use that variable name to read values.\n\nNote that the defined variable will only exist within the `then` and `else`\ntransform sequences.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "else": {
+              "$ref": "#/definitions/transform_sequence",
+              "description": "The sequence to execute if the input is a falsy value.",
+              "x-etl-label": "else"
+            },
+            "input_var": {
+              "description": "A variable name that will be bound to the input given to `if` inside the\n`then` and `else` transform sequences.\n",
+              "oneOf": [
+                {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "input_var"
+            },
+            "then": {
+              "$ref": "#/definitions/transform_sequence",
+              "description": "The sequence to execute if the input is a truthy value.",
+              "x-etl-label": "then"
+            }
+          },
+          "required": [
+            "else",
+            "then"
+          ]
+        },
+        "use": {
+          "enum": [
+            "if"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "LogicIf"
+    },
+    "preset_pipeline": {
+      "properties": {
+        "transform": {
+          "items": {
+            "$ref": "#/definitions/transform_step"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "transform"
+      ],
+      "type": "object"
+    },
+    "transformer__ai.detect_language": {
+      "description": "Accepts a string or a list of string and tries to detect the language of the\ngiven content.\n\nThe found language will be picked in a limited list of languages:\nen, fr, pt, es, de, zh, it, cs.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {},
+          "required": []
+        },
+        "use": {
+          "enum": [
+            "ai.detect_language"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "DetectLanguage"
+    },
+    "transformer__render.mustache": {
+      "description": "Executes the given template, using the input value as template variables.\n\nThe input data must be an object (a map).\n\nThe template uses the \"mustache\" syntax, _i.e_ wrapping variable names with\ndouble curly braces.\n\nThe template has access to the object data under the `$data` variable.\n\n**Example**\n\nWith the input defined as:\n\n    {\n      \"user\": {\n        \"name\": \"Joe\"\n      },\n      \"profession\": \"teacher\"\n    }\n\nAnd the object data as:\n\n    {\n      \"title\": \"Professeur d'Anglais H/F Paris\"\n    }\n\nThe template defined as:\n\n    Hello {{ user.name }}. As a {{ profession }}, are you interested in {{ $data.title }}?\n\nThe output will be:\n\n    Hello Joe. As a teacher, are you interested in Professeur d'Anglais H/F Paris?\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "template": {
+              "description": "The mustache template to execute with the given data.\n",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "template"
+            }
+          },
+          "required": [
+            "template"
+          ]
+        },
+        "use": {
+          "enum": [
+            "render.mustache"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "RenderMustache"
+    },
+    "transformer__string.append_key": {
+      "description": "This transformer is deprecated. See `Concat`.\n\nAppends the value identified by `key` to the given input, concatenated by the\n`glue`.\n\n* If the given input is `nil`, then the object value is returned, without the\n  glue.\n* If the `key` is not defined in the object, or contains an empty value (`nil`\n  or a blank string) then the input value is returned, without the glue.\n* If both are `nil`, an empty string is returned.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "glue": {
+              "description": "The string used to glue the input on the left and the object key value on\nthe right.\n\nNote that is string is parsed for special characters, so giving `\\n` will\nbe interpreted as a newline.\n",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "glue"
+            },
+            "key": {
+              "description": "The key of the object whose value will be appended.\n",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "key"
+            }
+          },
+          "required": [
+            "key"
+          ]
+        },
+        "use": {
+          "enum": [
+            "string.append_key"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "AppendKey"
+    },
+    "transformer__mapping.search_replace": {
+      "description": "Uses a mapping data table to search for substrings or patterns in the input\nvalue and replace them with their mapped value from the selected column.\n\nThe search is done following the mapping table entries ordering. For instance,\nif two entries would replace \"a\" by \"b\" and \"b\" by \"c\", then all \"a\" would\nbe replaced by \"c\" in the end.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "column": {
+              "description": "The column used for replacements.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "column"
+            },
+            "mapping": {
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "object"
+                  },
+                  "type": [
+                    "array",
+                    "string"
+                  ]
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "mapping",
+              "x-etl-meta": {
+                "is_data_table": "true"
+              }
+            }
+          },
+          "required": [
+            "column",
+            "mapping"
+          ]
+        },
+        "use": {
+          "enum": [
+            "mapping.search_replace"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "MappedSearchReplace"
+    },
+    "transformer__string.replace": {
+      "description": "Searches for all occurences of `search` in the input and replaces them with\n`replace`.\n\nThis transformer supports a `case_insensitive` option to make the search\ncase-insensitive, but note that the search and replacements are done at the\nbinary level, so rare inconsistencies may occur when dealing with multi-byte\ncharacters.\n\n**Using regular expressions:**\n\nThe `regex` parameter enable the regular expression mode where the `search`\nparamater is treated as a regular expression. Regexes are compiled with the\n`us` flags:\n\n* `u` for unicode: advanced character classes are enabled, so for instance\n  `\\p{L}` will match any unicode letter (such as \"é\") and not only ASCII\n  characters (such as \"e\").\n* `s` for _dotall_: The `.` character will match any character including\n  newlines (`\\n`), and the newline mode is set to `anycrlf` meaning that `.`\n  will also match `\\r\\n` or `\\r`.\n\nThe `case_insensitive` parameter will also activate the corresponding `i` flag\non the regular expression.\n\nNote that if the configuration is provided as JSON you must escape the `\\`\ncharacter. To search for `\\s` you need to write `\"search\": \"\\\\s\"`.\n\n\n**Multiple replacements**\n\nThis transformer allows to replace a single search string. It is possible to\nuse the `mapping.search_replace` transformer to run a series of replacements.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "case_insensitive": {
+              "description": "Whether the search should be case insensitive.",
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "case_insensitive"
+            },
+            "regex": {
+              "description": "Treat the search param as a regular expression",
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "regex"
+            },
+            "replace": {
+              "description": "The string to replace with.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "replace"
+            },
+            "search": {
+              "description": "The string to search for.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "search"
+            }
+          },
+          "required": [
+            "replace",
+            "search"
+          ]
+        },
+        "use": {
+          "enum": [
+            "string.replace"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "SearchReplace"
+    },
+    "source__aspen.jobs": {
+      "description": "This source implements Aspen XML job feeds.\n\nAspen provides an index page listing all XML urls to download.\nThis source will stream objects from each URL returned by the index page.\n\nThe XML will be searched with the `job_selector` param. This is expected to\nreturn a list of node that will be the objects returned from the source.\n\nEach object will be converted to a key value dictionary using a single level\nof properties.\n\nFor instance, with the following xml:\n\n```xml\n<jobs>\n  <job>\n    <job_id>123</job_id>\n    <title>Senior Developer</title>\n  </job>\n</jobs>\n```\n\nWith a `job_selector` defined as `/jobs/job`, the source will return a single\nobject, whose data will be defined as:\n\n```json\n{\n  \"job_id\": \"123\",\n  \"title\": \"Senior Developer\"\n}\n```\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "id_property": {
+              "description": "The property name to use as the provider reference.",
+              "type": "string",
+              "x-etl-label": "id_property"
+            },
+            "job_selector": {
+              "description": "An XPath expression to select the job nodes.",
+              "type": "string",
+              "x-etl-label": "job_selector"
+            },
+            "url": {
+              "description": "The XML feed endpoint without the `?page`.",
+              "type": "string",
+              "x-etl-label": "url"
+            }
+          },
+          "required": [
+            "id_property",
+            "job_selector",
+            "url"
+          ]
+        },
+        "use": {
+          "enum": [
+            "aspen.jobs"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "AspenJobs"
+    },
+    "transformer__filter_object": {
+      "description": "This transformer will mark the current object as ignored if the input is\n_falsy_.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {},
+          "required": []
+        },
+        "use": {
+          "enum": [
+            "filter_object"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "FilterObject"
+    },
+    "source": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/source__aspen.jobs"
+        },
+        {
+          "$ref": "#/definitions/source__chanel.jobs"
+        },
+        {
+          "$ref": "#/definitions/source__digital_recruiters.jobs"
+        },
+        {
+          "$ref": "#/definitions/source__kombo.jobs"
+        },
+        {
+          "$ref": "#/definitions/source__lever.jobs"
+        }
+      ],
+      "properties": {
+        "max_objects": {
+          "description": "The maximum number of objects to fetch from the source",
+          "type": [
+            "null",
+            "integer"
+          ],
+          "x-etl-label": "max_objects",
+          "x-etl-meta": {
+            "dynamic": "false"
+          }
+        },
+        "object_name": {
+          "description": "The path/key to use when setting the name for an object",
+          "type": [
+            "null",
+            "string"
+          ],
+          "x-etl-label": "object_name",
+          "x-etl-meta": {
+            "dynamic": "false"
+          }
+        },
+        "params": {
+          "type": "object"
+        },
+        "use": {
+          "enum": [
+            "aspen.jobs",
+            "chanel.jobs",
+            "digital_recruiters.jobs",
+            "kombo.jobs",
+            "lever.jobs"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "use",
+        "params"
+      ],
+      "type": "object"
+    },
+    "transform_block": {
+      "additionalProperties": false,
+      "properties": {
+        "__run__": {
+          "$ref": "#/definitions/transform_sequence"
+        }
+      },
+      "type": "object"
+    },
+    "transformer__key_equals": {
+      "description": "Returns `true` if the value associated to the `key` in the input object is\nequal to the given `value`.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "key": {
+              "description": "The key containing the value to compare.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "key"
+            },
+            "value": {
+              "description": "The value to compare with the value under `key`.",
+              "oneOf": [
+                {},
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "value"
+            }
+          },
+          "required": [
+            "key",
+            "value"
+          ]
+        },
+        "use": {
+          "enum": [
+            "key_equals"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "KeyEquals"
+    },
+    "source__chanel.jobs": {
+      "description": "A specific client for pulling jobs from cid.clasp-infra.com using a double\nauthentication mechanism.\n\nUses `curl/8.4.0` as the `User-Agent` header value for the resource\nendpoint.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "oauth_client_id_ref": {
+              "description": "The secret reference for the Oauth client ID",
+              "type": "string",
+              "x-etl-label": "oauth_client_id_ref"
+            },
+            "oauth_client_secret_ref": {
+              "description": "The secret reference for the Oauth client secret",
+              "type": "string",
+              "x-etl-label": "oauth_client_secret_ref"
+            },
+            "oauth_endpoint": {
+              "description": "The authentication base URL without any path, for instance `https://example.com`.",
+              "type": "string",
+              "x-etl-label": "oauth_endpoint"
+            },
+            "ocp_apim_subscription_key_ref": {
+              "description": "The secret reference for the Ocp-Apim-Subscription-Key header",
+              "type": "string",
+              "x-etl-label": "ocp_apim_subscription_key_ref"
+            },
+            "resource_client_id_ref": {
+              "description": "The client ID secret reference to authenticate in the resource endpoint",
+              "type": "string",
+              "x-etl-label": "resource_client_id_ref"
+            },
+            "resource_endpoint": {
+              "description": "The data base URL to fetch objects from without any path, for instance `https://example.com`",
+              "type": "string",
+              "x-etl-label": "resource_endpoint"
+            },
+            "resource_secret_name_ref": {
+              "description": "The secret reference for the 'Secret Name' header value to authenticate in the resource endpoint",
+              "type": "string",
+              "x-etl-label": "resource_secret_name_ref"
+            },
+            "resource_username": {
+              "description": "The username to use to authenticate to the resource endpoint, as plaintext.",
+              "type": "string",
+              "x-etl-label": "resource_username"
+            }
+          },
+          "required": [
+            "oauth_client_id_ref",
+            "oauth_client_secret_ref",
+            "ocp_apim_subscription_key_ref",
+            "resource_client_id_ref",
+            "resource_secret_name_ref",
+            "resource_username"
+          ]
+        },
+        "use": {
+          "enum": [
+            "chanel.jobs"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "ChanelJobs"
+    },
+    "transform_sequence": {
+      "items": {
+        "$ref": "#/definitions/transformer"
+      },
+      "type": "array"
+    },
+    "transformer__write_input": {
+      "description": "Stores the input value in the data object at the given key.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "key": {
+              "description": "The key or path to store the input value in.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "key"
+            },
+            "nil_if_blank": {
+              "description": "Write `nil` instead of the input when the input is an empty string or\na string that contains only whitespace characters.\n",
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "nil_if_blank"
+            }
+          },
+          "required": [
+            "key"
+          ]
+        },
+        "use": {
+          "enum": [
+            "write_input"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "WriteInput"
+    },
+    "transformer__join_list": {
+      "description": "Takes a list of strings as input and returns the concatenation of all the\nitems in the list, separated by `glue`.\n\nAny `null` value is ignored in the input list. If the input list is empty, or\ncontains only `null` values, it returns an empty string.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "glue": {
+              "description": "The string to use between items.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "glue"
+            }
+          },
+          "required": [
+            "glue"
+          ]
+        },
+        "use": {
+          "enum": [
+            "join_list"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Join"
+    },
+    "transformer__read_key": {
+      "description": "Returns a key or path from the object data.\n\nIf the key is not found, the transformer will return an error.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "key": {
+              "description": "A key or path to read from the object data.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "key"
+            }
+          },
+          "required": [
+            "key"
+          ]
+        },
+        "use": {
+          "enum": [
+            "read_key"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "ReadKey"
+    },
+    "transformer__rename_key": {
+      "description": "Updates a key at the root level of the object data. The old key is deleted\nand the value is copied under the new key.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "from_name": {
+              "description": "The key or path to rename.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "from_name"
+            },
+            "to_name": {
+              "description": "The new key or path.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "to_name"
+            }
+          },
+          "required": [
+            "from_name",
+            "to_name"
+          ]
+        },
+        "use": {
+          "enum": [
+            "rename_key"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "RenameKey"
+    },
+    "target__welcome_jobs.jobs": {
+      "description": "Uses the Internal API of Welcome Jobs to create and archive jobs.\n\n* Creations and updates are managed by the `/api/v1/internal/jobs` route that\n  implements a simple upsert CRUD mechanism. Returned status code depends on\n  the result of the upsert and can be 200 or 201.\n* Deletions are sent to the `/api/v1/internal/jobs/archive` route, a shortcut to patch\n  the status of a job only. The `404` errors are ignored and treated as a\n  valid deletion.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "endpoint": {
+              "description": "The base url for Welcome Jobs. That is, the full `<scheme>://<hostname>:<port><optional path>`. The `WELCOME_JOBS_ENDPOINT` environment variable will be used if not provided.",
+              "type": "string",
+              "x-etl-label": "endpoint"
+            },
+            "orga_wa_reference": {
+              "description": "The Welcome Accounts UUID for the organization.",
+              "type": "string",
+              "x-etl-label": "orga_wa_reference"
+            }
+          },
+          "required": [
+            "orga_wa_reference"
+          ]
+        },
+        "use": {
+          "enum": [
+            "welcome_jobs.jobs"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Welcome Jobs Internal Jobs API"
+    },
+    "transformer__read_key_or_default": {
+      "description": "Returns a key or path from the object data.\n\nIf the key is not found, or is null, the default value is returned. If the\ndefault value is not provided, a null value is returned.\n\nIt is also possible to return the default value only if the key is not found\nin the data, and return null if the key is found but the value is null. This\nis controlled by the `allow_null` parameter.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "allow_null": {
+              "description": "When true, null values will be returned when found, instead of the default value.",
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "allow_null"
+            },
+            "default": {
+              "description": "Default value to return if the key is not found.",
+              "oneOf": [
+                {},
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "default"
+            },
+            "key": {
+              "description": "A key or path to read from the object data.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "key"
+            }
+          },
+          "required": [
+            "key"
+          ]
+        },
+        "use": {
+          "enum": [
+            "read_key_or_default"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "ReadKeyOrDefault"
+    },
+    "transformer__array.lookup": {
+      "description": "Returns a value from the input array at a given index. Indices start at `0`.\n\nReturns a null value if the index is not found.\n\nNegative indices are supported. `-1` is the last item, `-2` is the one before.\nNegative indices lower than the negative lenght will return a null value\n(index `-3` with an array of `2` items).\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "index": {
+              "description": "The index to lookup for.",
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "index"
+            }
+          },
+          "required": [
+            "index"
+          ]
+        },
+        "use": {
+          "enum": [
+            "array.lookup"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Lookup"
+    },
+    "transformer__mapping.match_translate": {
+      "description": "Searches in the mapping for a key that matches the input and defines a value\nfor the selected column and returns the column value.\n\n* String and case insentive string keys match the input if they are contained\n  in the input.\n* Regex and case insensitive regex keys match the input if the regex matches\n  the input.\n\nMapping entries that match the input but do not define a value for the\nspecified column are ignored, and the search continues over subsequent keys.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "column": {
+              "description": "The column to use for translations.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "column"
+            },
+            "mapping": {
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "object"
+                  },
+                  "type": [
+                    "array",
+                    "string"
+                  ]
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "mapping",
+              "x-etl-meta": {
+                "is_data_table": "true"
+              }
+            }
+          },
+          "required": [
+            "column",
+            "mapping"
+          ]
+        },
+        "use": {
+          "enum": [
+            "mapping.match_translate"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "MatchTranslate"
+    },
+    "transformer__input": {
+      "description": "Returns the given value as-is.\n\nThis utility allows to start a transform step with a raw value as input\ninstead of starting from the object data.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "value": {
+              "description": "This can be any value.\n\nNote that the configuration is serialized as JSON so the value must be\nJSON-serializable.\n",
+              "x-etl-label": "value",
+              "x-etl-meta": {
+                "dynamic": "false"
+              }
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        "use": {
+          "enum": [
+            "input"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "OutputValue"
+    },
+    "transformer__string.change_case": {
+      "description": "Returns the input string with its case set to the `case` parameter.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "case": {
+              "description": "The desired output case, accepts 'lower' and 'upper'",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "case"
+            }
+          },
+          "required": [
+            "case"
+          ]
+        },
+        "use": {
+          "enum": [
+            "string.change_case"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "ChangeCase"
+    },
+    "target": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/target__core.noop"
+        },
+        {
+          "$ref": "#/definitions/target__welcome_jobs.jobs"
+        },
+        {
+          "$ref": "#/definitions/target__welcome_kit.jobs"
+        }
+      ],
+      "properties": {
+        "params": {
+          "type": "object"
+        },
+        "use": {
+          "enum": [
+            "core.noop",
+            "welcome_jobs.jobs",
+            "welcome_kit.jobs"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "use",
+        "params"
+      ],
+      "type": "object"
+    },
+    "transform_step__step.transform": {
+      "description": "Execute a suite of transformations with the current object data.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "name": {
+              "description": "An optional name used for UI purposes only.",
+              "type": [
+                "null",
+                "string"
+              ],
+              "x-etl-label": "name",
+              "x-etl-meta": {
+                "dynamic": "false"
+              }
+            },
+            "run": {
+              "$ref": "#/definitions/transform_sequence",
+              "description": "The transformers to execute.",
+              "x-etl-label": "run"
+            }
+          },
+          "required": [
+            "run"
+          ]
+        },
+        "use": {
+          "enum": [
+            "step.transform"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Transform"
+    },
+    "transformer__array.find": {
+      "description": "Returns the first value from a list for which the given transform sequence\noutputs a truthy value.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "run": {
+              "$ref": "#/definitions/transform_sequence",
+              "description": "A list of transformers to apply to each item of the input list.",
+              "x-etl-label": "run"
+            },
+            "var": {
+              "description": "Bind the input to a variable",
+              "oneOf": [
+                {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "var"
+            }
+          },
+          "required": [
+            "run"
+          ]
+        },
+        "use": {
+          "enum": [
+            "array.find"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Find"
+    },
+    "transformer__mapping.match_any": {
+      "description": "Returns `true` if any key matches the input, `false` otherwise. No custom\ncolumn is used nor returned.\n\n* String and case insentive string keys match the input if they are contained\n  in the input.\n* Regex and case insensitive regex keys match the input if the regex matches\n  the input.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "mapping": {
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "object"
+                  },
+                  "type": [
+                    "array",
+                    "string"
+                  ]
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "mapping",
+              "x-etl-meta": {
+                "is_data_table": "true"
+              }
+            }
+          },
+          "required": [
+            "mapping"
+          ]
+        },
+        "use": {
+          "enum": [
+            "mapping.match_any"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "MatchAny"
+    },
+    "transformer__string.collect": {
+      "description": "Accepts a list of keys as parameters and returns all compatible values under\nthose keys from the object data in a flat list.\n\nThe compatible values are strings and numbers. Numbers will be converted to\nstrings in the final output.\n\nIf a key points to a list or a sub-object, all values are also collected\nrecursively. Note that only _values_ are returned from objects, no _key_ will\nbe part of the returned list of strings.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "keys": {
+              "description": "The list of keys to extract.",
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "keys"
+            }
+          },
+          "required": [
+            "keys"
+          ]
+        },
+        "use": {
+          "enum": [
+            "string.collect"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Collect"
+    },
+    "transformer__get_flag": {
+      "description": "Returns `true` if the defined variable is truthy, that is everything except\n`nil` and `false`.\n\nReturns `false` otherwise. It does not fail if the variable does not exist.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "var": {
+              "description": "The variable name to check for truthiness.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "var"
+            }
+          },
+          "required": [
+            "var"
+          ]
+        },
+        "use": {
+          "enum": [
+            "get_flag"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "GetFlag"
+    },
+    "transformer__exclude_object": {
+      "description": "This transformer will mark the current object as ignored if the input is\n_truthy_.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {},
+          "required": []
+        },
+        "use": {
+          "enum": [
+            "exclude_object"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "ExcludeObject"
+    },
+    "transformer__foreach": {
+      "description": "Allows to apply other transformers to each item of an input collection.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "run": {
+              "$ref": "#/definitions/transform_sequence",
+              "description": "A list of transformers to apply to each item of the input list.",
+              "x-etl-label": "run"
+            },
+            "var": {
+              "description": "Bind the input to a variable",
+              "oneOf": [
+                {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "var"
+            }
+          },
+          "required": [
+            "run"
+          ]
+        },
+        "use": {
+          "enum": [
+            "foreach"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Foreach"
+    },
+    "transformer__cache": {
+      "description": "This transformer implements a cache to share data between different object\ntransformations for a single run.\n\nOnce the transform sequence executes successfully and outputs a value, this\ntransformer will return that same value whenever it is called for subsequent\nobjects of the same run.\n\nNo value is stored in cache until the inner transform sequence executes\nsuccessfully, so it will be executed for each object as long as it fails.\n\nIf you need to use multiple caches in a transformation configuration, make\nsure to use a different cache `key`. On the other hand, if you want to reuse\nthe same cache in multiple place inside the transformation, reuse the same\n`key`.\n\n\n#### Disclaimers\n\n* The cache is used per run and not per object, which means that **it is\n  highly discouraged to use transformers that modify the object data** in the\n  given transform sequence, as it will only executed for the first successful\n  object.\n* The cache value will be stored as long as the inner transform sequence\n  succeeds for a given object, even if the transformation for that object\n  fails in a subsequent transformer.\n\nPlease use the cache with care.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "key": {
+              "description": "A cache identifier. All instances of this transformer using the same key will share the same data.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "key"
+            },
+            "run": {
+              "$ref": "#/definitions/transform_sequence",
+              "description": "The transformations to execute whose output value will be stored in the cache",
+              "x-etl-label": "run"
+            }
+          },
+          "required": [
+            "key",
+            "run"
+          ]
+        },
+        "use": {
+          "enum": [
+            "cache"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Cache"
+    },
+    "transformer__delete_keys": {
+      "description": "Delete keys from the object data.",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "keys": {
+              "description": "The list of keys to delete.",
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "keys"
+            }
+          },
+          "required": [
+            "keys"
+          ]
+        },
+        "use": {
+          "enum": [
+            "delete_keys"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "DeleteKeys"
+    },
+    "target__welcome_kit.jobs": {
+      "description": "This target sends the object data as a job according to the Welcome Kit\nInternal API description of a job.\n\nThe data will be validated according to the OpenAPI spec schema defined the\n`wk` Ruby on Rails application.\n\nIt uses a dedicated endpoint of the Internal API of Welcome Kit to create and\narchive jobs.\n\n* Creations and updates are managed by the `/api/v3/internal/etl/jobs` route that\n  implements a simple upsert CRUD mechanism. Returned status code depends on\n  the result of the upsert and can be 200 or 201.\n* Deletions are sent to the `/api/v3/internal/etl/jobs` route, a shortcut to patch the\n  status of a job only. The `404` errors are ignored and treated as a valid\n  deletion.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "apply_url_tracker": {
+              "description": "A query string appended to the `apply_url` of the job if provided.\nIt may start with an `?`, merging onto the `apply_url` query string if\npresent is supported.\n",
+              "type": "string",
+              "x-etl-label": "apply_url_tracker"
+            },
+            "endpoint": {
+              "description": "The base url for Welcome Kit.\n\nThat is, the full `<scheme>://<hostname>:<port><optional path>`.\nThe `WELCOME_KIT_ENDPOINT` environment variable will be used if not\nprovided.\n",
+              "type": "string",
+              "x-etl-label": "endpoint"
+            }
+          },
+          "required": []
+        },
+        "use": {
+          "enum": [
+            "welcome_kit.jobs"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Welcome Kit Internal Jobs API"
+    },
+    "transformer__array.join": {
+      "description": "Takes a list of strings as input and returns the concatenation of all the\nitems in the list, separated by `glue`.\n\nAny `null` value is ignored in the input list. If the input list is empty, or\ncontains only `null` values, it returns an empty string.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "glue": {
+              "description": "The string to use between items.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "glue"
+            }
+          },
+          "required": [
+            "glue"
+          ]
+        },
+        "use": {
+          "enum": [
+            "array.join"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Join"
+    },
+    "transformer__get_var": {
+      "description": "Looks up the given variable in the current scope and returns its value.\n\nA scope is defined at each level of the transformation:\n\n* The outermost `transform` definition for a configuration.\n* A preset included in that transform.\n* A preset included in another preset.\n* The level of a `foreach` transformer.\n* Other macros such as `if` may define scopes as well.\n\n**Variables are inherited from the parent scopes.**\n\nFor instance, if the transformation uses presets `A` and `B`, and preset `A`\nuses preset `A.1`:\n\n* Variables defined at the top level are visible anywhere.\n* Variables defined in preset `A` (or passed as the `vars` params for the\n  preset) are visible in `A` and `A.1` but _not_ in `B` or at the top level\n  (variables are cleaned at the end of the scope).\n* Variables defined in `B` are not visible in `A`, `A.1` or at the top level.\n\nAlso, variables are not visible before they are defined. They are not\ninitialized at the beginning of the transformation step.\n\n**Variables are shadowing**\n\nIt is possible to define a variable with a name that already exists in the\nparent scope. The new value will be visible in the scope it is defined, and in\nthe inner scopes. At the end of the defining scope, the value will be clean\nand the parent scope will see the old value.\n\nExample:\n\n* The outer transform uses `set_var` to create the `who` variable to\n  `\"Alice\"`.\n* The outer scope uses a preset, passing `{\"vars\": {\"who\": \"Bob\"}}` in the\n  params.\n* The preset will get `\"Bob\"` when using `get_var` with `who` for the key.\n* After the preset transformations are applied, back in the outer transform\n  scope, `get_var` will return `\"Alice\"`.\n\n\n**Dotpath syntax support**\n\n`get_var` supports passing a path as the `var` param.\n\nIf the context defines a variable `a` with the value `{\"b\": {\"c\": \"hello\"}}`\nthen it is possible to pass `\"a.b.c\"` as the `var` param to get `\"hello\"` as a\nresult.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "var": {
+              "description": "The name or path of the variable to output.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "var"
+            }
+          },
+          "required": [
+            "var"
+          ]
+        },
+        "use": {
+          "enum": [
+            "get_var"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "GetVar"
+    },
+    "transformer": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/transformer__ai.detect_language"
+        },
+        {
+          "$ref": "#/definitions/transformer__ai.detect_profession"
+        },
+        {
+          "$ref": "#/definitions/transformer__array.find"
+        },
+        {
+          "$ref": "#/definitions/transformer__array.join"
+        },
+        {
+          "$ref": "#/definitions/transformer__array.lookup"
+        },
+        {
+          "$ref": "#/definitions/transformer__cache"
+        },
+        {
+          "$ref": "#/definitions/transformer__delete_keys"
+        },
+        {
+          "$ref": "#/definitions/transformer__exclude_object"
+        },
+        {
+          "$ref": "#/definitions/transformer__filter_object"
+        },
+        {
+          "$ref": "#/definitions/transformer__foreach"
+        },
+        {
+          "$ref": "#/definitions/transformer__get_flag"
+        },
+        {
+          "$ref": "#/definitions/transformer__get_var"
+        },
+        {
+          "$ref": "#/definitions/transformer__html.attribute"
+        },
+        {
+          "$ref": "#/definitions/transformer__http_get"
+        },
+        {
+          "$ref": "#/definitions/transformer__if"
+        },
+        {
+          "$ref": "#/definitions/transformer__input"
+        },
+        {
+          "$ref": "#/definitions/transformer__join_list"
+        },
+        {
+          "$ref": "#/definitions/transformer__key_equals"
+        },
+        {
+          "$ref": "#/definitions/transformer__kombo.current_posting"
+        },
+        {
+          "$ref": "#/definitions/transformer__mapping.match_any"
+        },
+        {
+          "$ref": "#/definitions/transformer__mapping.match_translate"
+        },
+        {
+          "$ref": "#/definitions/transformer__mapping.search_replace"
+        },
+        {
+          "$ref": "#/definitions/transformer__mapping.translate"
+        },
+        {
+          "$ref": "#/definitions/transformer__read_key"
+        },
+        {
+          "$ref": "#/definitions/transformer__read_key_or_default"
+        },
+        {
+          "$ref": "#/definitions/transformer__rename_key"
+        },
+        {
+          "$ref": "#/definitions/transformer__render.mustache"
+        },
+        {
+          "$ref": "#/definitions/transformer__string.append_key"
+        },
+        {
+          "$ref": "#/definitions/transformer__string.change_case"
+        },
+        {
+          "$ref": "#/definitions/transformer__string.clean_html"
+        },
+        {
+          "$ref": "#/definitions/transformer__string.collect"
+        },
+        {
+          "$ref": "#/definitions/transformer__string.concat"
+        },
+        {
+          "$ref": "#/definitions/transformer__string.contains"
+        },
+        {
+          "$ref": "#/definitions/transformer__string.replace"
+        },
+        {
+          "$ref": "#/definitions/transformer__string.slugify"
+        },
+        {
+          "$ref": "#/definitions/transformer__string.split"
+        },
+        {
+          "$ref": "#/definitions/transformer__write_input"
+        },
+        {
+          "$ref": "#/definitions/transformer__write_key"
+        },
+        {
+          "$ref": "#/definitions/transformer__write_value"
+        }
+      ],
+      "properties": {
+        "params": {
+          "type": "object"
+        },
+        "use": {
+          "enum": [
+            "ai.detect_language",
+            "ai.detect_profession",
+            "array.find",
+            "array.join",
+            "array.lookup",
+            "cache",
+            "delete_keys",
+            "exclude_object",
+            "filter_object",
+            "foreach",
+            "get_flag",
+            "get_var",
+            "html.attribute",
+            "http_get",
+            "if",
+            "input",
+            "join_list",
+            "key_equals",
+            "kombo.current_posting",
+            "mapping.match_any",
+            "mapping.match_translate",
+            "mapping.search_replace",
+            "mapping.translate",
+            "read_key",
+            "read_key_or_default",
+            "rename_key",
+            "render.mustache",
+            "string.append_key",
+            "string.change_case",
+            "string.clean_html",
+            "string.collect",
+            "string.concat",
+            "string.contains",
+            "string.replace",
+            "string.slugify",
+            "string.split",
+            "write_input",
+            "write_key",
+            "write_value"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "use",
+        "params"
+      ],
+      "type": "object"
+    },
+    "transformer__string.split": {
+      "description": "Divides a string into parts based on a pattern. Returns an array with the\ndifferent parts.\n\nThe pattern is a string of zero or more characters. Regular expressions are\nnot supported for now.\n\nThe pattern is parsed as an escaped string, so `\\\\n` will be interpreted as a\n`\\n`, while `\\n` still represent itself, both are treated the same way.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "pattern": {
+              "description": "The separator to split the string with.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "pattern"
+            },
+            "trim": {
+              "description": "Remove empty strings from the array results.",
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "trim"
+            }
+          },
+          "required": [
+            "pattern"
+          ]
+        },
+        "use": {
+          "enum": [
+            "string.split"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Split"
+    },
+    "config_pipeline": {
+      "properties": {
+        "source": {
+          "$ref": "#/definitions/source",
+          "type": "object"
+        },
+        "target": {
+          "$ref": "#/definitions/target",
+          "type": "object"
+        },
+        "transform": {
+          "items": {
+            "$ref": "#/definitions/transform_step"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "source",
+        "transform",
+        "target"
+      ],
+      "type": "object"
+    },
+    "transformer__ai.detect_profession": {
+      "description": "Accepts keys to look for in the object data and calls the Profession Wizard\nAPI to fetch a profession.\n\nAll given keys must be present in the object data and contain a string value,\notherwise an error is returned.\n\nThe WK-compatible profession reference is returned as output.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "description_key": {
+              "description": "The key to look for in the object data to get the job description sent to Profession Wizard.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "description_key"
+            },
+            "endpoint": {
+              "description": "The Profession Wizard endpoint as `<scheme>://<hostname>:<port><optional path>`. The `PROFESSION_WIZARD_ENDPOINT` environment variable will be used if not provided.",
+              "oneOf": [
+                {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "endpoint"
+            },
+            "language_key": {
+              "description": "The key to look for in the object data to get the language sent to Profession Wizard.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "language_key"
+            },
+            "name_key": {
+              "description": "The key to look for in the object data to get the job name sent to Profession Wizard.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "name_key"
+            }
+          },
+          "required": [
+            "description_key",
+            "language_key",
+            "name_key"
+          ]
+        },
+        "use": {
+          "enum": [
+            "ai.detect_profession"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "DetectProfession"
+    },
+    "transformer__string.slugify": {
+      "description": "Transforms an input string into a slug without whitespace.\n\nThis tranformer will fail if the slug would be empty. For instance a blank\nstring like `\"     \"` will be converted to `\"-----\"` and then trimmed,\nreturning `\"\"`, which is not considered a valid slug.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "lowercase": {
+              "description": "Converts the slug to lowercase.",
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "lowercase"
+            },
+            "separator": {
+              "description": "The string used to replace whitespace.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "separator"
+            }
+          },
+          "required": []
+        },
+        "use": {
+          "enum": [
+            "string.slugify"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Slugify"
+    },
+    "transformer__http_get": {
+      "description": "Accepts an URL as input, executes a `GET` request and returns the response\nbody.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "retry": {
+              "description": "When `true`, the request will be retried 3 times for a total of 4 attempts,\nwith an exponetial backoff delay.\n",
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "retry"
+            }
+          },
+          "required": []
+        },
+        "use": {
+          "enum": [
+            "http_get"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "HTTPGet"
+    },
+    "transformer__string.clean_html": {
+      "description": "HTML Cleanup utility allowing for standardization and normalization of HTML\ndocuments.\n\nAll default parameters are designed to output structured text for\ndescriptions, articles, _etc._ and not intended to work with full web pages or\ncomplex HTML layouts ; though it can be done with explicit configuration.\n\nThe cleaner executes multiple operations on the HTML document:\n\n* **Filter tags**: This operation is controlled with the `reject_tags` and\n  `allow_tags` parameters. The tags _and their whole content_ is removed from\n  the document.\n* **Unwrap tags**: This operatoin will replace unwanted tags with their\n  content. For instance, unwrapping `div` tags will lift all the div's inner\n  content in place of the div.  The `script` and `style` tags can be set for\n  unwrapping but their content is always removed in that case.\n* **Strip attributes**: This operation will remove all attributes from all\n  tags, except those defined in the `allow_attributes` parameter.\n* **Validate attributes**: This operation will verify the content of\n  attributes and remove non-matching cases:\n    - `href` attributes must be an absolute URL with `https://`.\n    - `src` attributes must be an absolute URL with `https://`.\n* **Smart grouping**: This operation will try to rebuild article-like content\n  by:\n    - Wrapping free text content in a `p` tag if not already wrapped. Any `br`\n      or `hr` tag in the content flow will start a new `p` tag.  This\n      operations is made on all tags listed in the `unwrap_tags` parameter, as\n      well as the root level.\n    - Fixing `ul` and `li` wrapping. All `li` sequences not wrapped in an `ul`\n      will be wrapped, and other content than `li` found inside an `ul` will\n      be lifted up. If some content appears between `li` tags, multuple `ul`\n      tags will be created.\n* **Filter empty tags**: This operation will remove all empty tags from the\n  document, that is, tags with no children or only whitespace text-node\n  children.\n* **Prettify**: The final HTML is formatted to ease further usage with\n  parsers.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "allow_attributes": {
+              "description": "HTML attributes to keep. All unlisted attributes will be removed from\nall tags.\n",
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "allow_attributes"
+            },
+            "allow_tags": {
+              "description": "HTML tags to keep. If empty, all tags are allowed, except those defined\nin `reject_tags`. If not empty, the `reject_tags` parameter is ignored.\n",
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "allow_tags"
+            },
+            "prettify": {
+              "description": "Whether to pretty-format the final HTML document. This is useful for\ndebugging and further parsing.\n",
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "prettify"
+            },
+            "reject_tags": {
+              "description": "HTML tags to remove. Matched tags and all their content is removed. This\nparameter is ignored if `allow_tags` is not empty.\n",
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "reject_tags"
+            },
+            "remove_empty_tags": {
+              "description": "HTML tags to remove if their content is empty, _i.e._, no children or\nonly text children with withespace.\n",
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "remove_empty_tags"
+            },
+            "smart_content_grouping": {
+              "description": "Whether to enable content grouping, such as wrapping body content in `p`\ntags or forcing `ul` around `li` tags.\n",
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "smart_content_grouping"
+            },
+            "unwrap_tags": {
+              "description": "HTML tags to unwrap. Those tags will be removed but their content\nwill be lifted up in the parent scope.\n",
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "unwrap_tags"
+            }
+          },
+          "required": []
+        },
+        "use": {
+          "enum": [
+            "string.clean_html"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "CleanHtml"
+    },
+    "transformer__mapping.translate": {
+      "description": "Searches for the input in the mapping group and return the value if found in\nthe specified `column`.\n\nOtherwise returns an error.\n\nNote that the first mapping entry whose search key is equal to the input will\nbe used. If the entry does not define a value for the desired column, the\ntransformer will return an error.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "column": {
+              "description": "The column to use for translations",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "column"
+            },
+            "mapping": {
+              "oneOf": [
+                {
+                  "items": {
+                    "type": "object"
+                  },
+                  "type": [
+                    "array",
+                    "string"
+                  ]
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "mapping",
+              "x-etl-meta": {
+                "is_data_table": "true"
+              }
+            }
+          },
+          "required": [
+            "column",
+            "mapping"
+          ]
+        },
+        "use": {
+          "enum": [
+            "mapping.translate"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "Translate"
+    },
+    "transform_step__step.preset": {
+      "description": "Execute a transformation preset.\n\nPresets are containers other transform steps and can even invoke other\npresets. They are useful to define reusable parts of a transformation pipeline.\n",
+      "properties": {
+        "params": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "preset": {
+              "description": "The reference of the preset to use.",
+              "type": "string",
+              "x-etl-label": "preset",
+              "x-etl-meta": {
+                "dynamic": "false"
+              }
+            },
+            "vars": {
+              "description": "A key/value map of variables to be defined in the preset scope.",
+              "oneOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "$ref": "#/definitions/transform_block"
+                }
+              ],
+              "x-etl-label": "vars"
+            }
+          },
+          "required": [
+            "preset"
+          ]
+        },
+        "use": {
+          "enum": [
+            "step.preset"
+          ],
+          "type": "string"
+        }
+      },
+      "x-etl-name": "UsePreset"
+    }
+  }
+}
